@@ -806,6 +806,15 @@
         "desc": "Umgebungsvariablen, die nur an DeepSeek Harness übergeben werden. Verwendet das ausgewählte native Web- oder Desktop-Profil, deine Anmeldedaten, Modelle und MCP-Server."
       }
     },
+    "zcode": {
+      "installation": {
+        "desc": "Auto finds the zcode command on your PATH. Sign in once with \"zcode login\" in a terminal."
+      },
+      "environment": {
+        "name": "ZCode environment variables",
+        "desc": "Environment variables passed only to ZCode. Uses your native ZCode login, models and settings."
+      }
+    },
     "skills": {
       "subTabs": {
         "claude": "Claude Code",

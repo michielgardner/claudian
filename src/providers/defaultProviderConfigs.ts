@@ -5,6 +5,7 @@ import { DEFAULT_DEEPSEEK_PROVIDER_SETTINGS } from './deepseek/config';
 import { DEFAULT_GROK_PROVIDER_SETTINGS } from './grok/config';
 import { DEFAULT_OPENCODE_PROVIDER_SETTINGS } from './opencode/config';
 import { DEFAULT_PI_PROVIDER_SETTINGS } from './pi/config';
+import { DEFAULT_ZCODE_PROVIDER_SETTINGS } from './zcode/config';
 
 export function getBuiltInProviderDefaultConfigs(): ProviderConfigMap {
   return {
@@ -14,5 +15,6 @@ export function getBuiltInProviderDefaultConfigs(): ProviderConfigMap {
     grok: { ...DEFAULT_GROK_PROVIDER_SETTINGS },
     opencode: { ...DEFAULT_OPENCODE_PROVIDER_SETTINGS },
     pi: { ...DEFAULT_PI_PROVIDER_SETTINGS },
+    zcode: { ...DEFAULT_ZCODE_PROVIDER_SETTINGS },
   };
 }

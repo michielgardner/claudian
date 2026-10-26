@@ -806,6 +806,15 @@
         "desc": "僅傳遞給 DeepSeek Harness 的環境變數。使用所選的原生 Web 或 Desktop 設定檔、憑證、模型與 MCP 伺服器。"
       }
     },
+    "zcode": {
+      "installation": {
+        "desc": "Auto finds the zcode command on your PATH. Sign in once with \"zcode login\" in a terminal."
+      },
+      "environment": {
+        "name": "ZCode environment variables",
+        "desc": "Environment variables passed only to ZCode. Uses your native ZCode login, models and settings."
+      }
+    },
     "skills": {
       "subTabs": {
         "claude": "Claude Code",

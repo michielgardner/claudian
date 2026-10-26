@@ -19,6 +19,7 @@
   --claudian-brand-grok: #fff;
   --claudian-brand-grok-rgb: 255, 255, 255;
   --claudian-brand-deepseek: #4D6BFE;
+  --claudian-brand-zcode: #2D6BF6;
   --claudian-error: #dc3545;
   --claudian-compact: #5bc0de;
 
@@ -100,4 +101,14 @@ body.theme-light .claudian-inline-menu-layer {
   --claudian-brand: var(--claudian-brand-neutral);
   --claudian-brand-rgb: var(--claudian-brand-neutral-rgb);
   --claudian-provider-logo: var(--claudian-brand-deepseek);
+}
+
+.claudian-container[data-provider="zcode"],
+.claudian-inline-input-container[data-provider="zcode"],
+.claudian-inline-menu-layer[data-provider="zcode"],
+.claudian-model-provider-tab[data-provider="zcode"] {
+  /* ZCode blue marks only its logo; its other accents read as normal text. */
+  --claudian-brand: var(--claudian-brand-neutral);
+  --claudian-brand-rgb: var(--claudian-brand-neutral-rgb);
+  --claudian-provider-logo: var(--claudian-brand-zcode);
 }

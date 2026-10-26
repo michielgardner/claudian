@@ -6,6 +6,7 @@ import { deepseekProviderRegistration } from './deepseek/registration';
 import { grokProviderRegistration } from './grok/registration';
 import { opencodeProviderRegistration } from './opencode/registration';
 import { piProviderRegistration } from './pi/registration';
+import { zcodeProviderRegistration } from './zcode/registration';
 
 let builtInProvidersRegistered = false;
 
@@ -16,6 +17,7 @@ export const BUILT_IN_PROVIDER_MODULES = [
   grokProviderRegistration,
   opencodeProviderRegistration,
   piProviderRegistration,
+  zcodeProviderRegistration,
 ] as const;
 
 export function registerBuiltInProviders(): void {
