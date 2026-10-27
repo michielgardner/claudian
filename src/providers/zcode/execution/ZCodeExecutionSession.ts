@@ -8,6 +8,7 @@ import {
   type ProviderExecutionSession,
   type ProviderSessionConfig,
   type ProviderSessionEvent,
+  type ProviderToolPolicy,
   RequestedRunChannel,
   SessionSnapshotState,
 } from '@/core/execution';
@@ -61,6 +62,7 @@ export class ZCodeExecutionSession implements ProviderExecutionSession {
   private turn?: ActiveTurn;
   private applied: AppliedSettings = {};
   private permissionMode?: string;
+  private toolPolicy?: ProviderToolPolicy;
   private readonly openPrompts = new Map<string, Promise<unknown>>();
   private disposed = false;
 
@@ -222,6 +224,7 @@ export class ZCodeExecutionSession implements ProviderExecutionSession {
       this.applied.reasoning = reasoning;
     }
     this.permissionMode = configuration.permissionMode;
+    this.toolPolicy = request.toolPolicy;
     const mode = zcodeNativeMode(request.toolPolicy, configuration.permissionMode);
     if (this.applied.mode !== mode) {
       await client.call('session/setMode', { sessionId, mode });
@@ -312,6 +315,20 @@ export class ZCodeExecutionSession implements ProviderExecutionSession {
     }
   }
 
+  /** Adopts a permission mode chosen mid-turn and moves the native session to it, so later steps stop asking. */
+  private followSelectedMode(): void {
+    const selected = this.runtime.selectedPermissionMode;
+    if (!selected || selected === this.permissionMode || !this.toolPolicy || !this.nativeId) return;
+    const mode = zcodeNativeMode(this.toolPolicy, selected);
+    this.permissionMode = selected;
+    if (this.applied.mode === mode) return;
+    this.applied.mode = mode;
+    const sessionId = this.nativeId;
+    void this.runtime.client().then(client => client.call('session/setMode', { sessionId, mode })).catch(() => {
+      if (this.applied.mode === mode) this.applied.mode = undefined;
+    });
+  }
+
   private async requestPermission(params: Record<string, unknown>): Promise<unknown> {
     const options = Array.isArray(params.options) ? params.options.filter(isRecord) : [];
     const pick = (kind: string): Record<string, unknown> | undefined => options.find(option => option.kind === kind);
@@ -319,7 +336,8 @@ export class ZCodeExecutionSession implements ProviderExecutionSession {
     const denial = isRecord(deny?.response) ? deny.response : { decision: 'deny', reason: 'Denied in Claudian.' };
     const turn = this.turn;
     if (!turn || turn.stopRequested) return denial;
-    // ZCode's full access mode never reaches here for ordinary tools; this answers any remaining prompt the same way.
+    // A toolbar change during a running turn applies here: Claudian only passes the mode with the next message.
+    this.followSelectedMode();
     if (this.permissionMode === ZCODE_FULL_ACCESS_MODE) {
       const allow = pick('allow_once');
       return isRecord(allow?.response) ? allow.response : { decision: 'allow', reason: 'Allowed by Claudian full access.' };

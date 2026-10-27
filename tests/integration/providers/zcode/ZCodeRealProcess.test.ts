@@ -123,4 +123,44 @@ run('ZCode against a real app-server', () => {
     expect(text.toLowerCase()).toContain('red');
     await session.dispose();
   });
+  it('stops asking after switching to full access mid-session', async () => {
+    const seen: string[] = [];
+    const port: ProviderInteractionPort = { ...interactionPort, requestApproval: request => { seen.push(request.toolName); return Promise.resolve({ interactionId: request.interactionId, decision: 'allow' }); } };
+    const session = new ZCodeExecutionSession({ lifecycle: 'persistent', nativePersistence: 'enabled', workingDirectory: workspace, interactionPort: port }, runtime);
+    const turn = async (text: string, permissionMode: string): Promise<void> => {
+      const run = session.execute({
+        input: [{ type: 'text', text }],
+        configuration: { systemInstructions: { kind: 'explicit', instructions: '' }, model: 'zcode:account%3Azai-individual-coding-plan/GLM-5.3-Flash', reasoning: 'low', permissionMode },
+        toolPolicy: { kind: 'provider-default' }, signal: new AbortController().signal,
+      });
+      for await (const event of run.events) void event;
+    };
+    await turn('Create a file ask.txt containing a. No other tools.', 'build');
+    expect(seen.length).toBeGreaterThan(0);
+    seen.length = 0;
+    await turn('Create a file full.txt containing f. No other tools.', 'yolo');
+    expect(readFileSync(path.join(workspace, 'full.txt'), 'utf8').trim()).toBe('f');
+    expect(seen).toEqual([]);
+    await session.dispose();
+  });
+  it('follows a switch to full access while a turn is running', async () => {
+    const selection = host.providerSelection as { permissionMode?: string };
+    const seen: string[] = [];
+    const port: ProviderInteractionPort = { ...interactionPort, requestApproval: request => {
+      seen.push(request.toolName);
+      selection.permissionMode = 'yolo';
+      return Promise.resolve({ interactionId: request.interactionId, decision: 'allow' });
+    } };
+    const session = new ZCodeExecutionSession({ lifecycle: 'persistent', nativePersistence: 'enabled', workingDirectory: workspace, interactionPort: port }, runtime);
+    const run = session.execute({
+      input: [{ type: 'text', text: 'Using the Write tool three separate times, create one.txt, two.txt and three.txt, each containing its own name. No other tools.' }],
+      configuration: { systemInstructions: { kind: 'explicit', instructions: '' }, model: 'zcode:account%3Azai-individual-coding-plan/GLM-5.3-Flash', reasoning: 'low', permissionMode: 'build' },
+      toolPolicy: { kind: 'provider-default' }, signal: new AbortController().signal,
+    });
+    for await (const event of run.events) void event;
+    delete selection.permissionMode;
+    for (const name of ['one', 'two', 'three']) expect(readFileSync(path.join(workspace, `${name}.txt`), 'utf8')).toContain(name);
+    expect(seen).toHaveLength(1);
+    await session.dispose();
+  });
 });
