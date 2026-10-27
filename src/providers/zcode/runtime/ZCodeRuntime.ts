@@ -43,6 +43,9 @@ export class ZCodeRuntime {
 
   constructor(private readonly host: ProviderRuntimeHost) {}
 
+  /** The permission mode currently selected for ZCode in the toolbar, read live. */
+  get selectedPermissionMode(): string | undefined { return this.host.providerSelection.permissionMode; }
+
   /** Bumps whenever a new process starts, so sessions can tell whether they are still active in it. */
   get currentGeneration(): number { return this.generation; }
 
